@@ -28,7 +28,7 @@ function Task({itemNo, text, expiration, remove}) {
 				itemNo={itemNo}
 				expired={expired}
 				text={text}
-				action={() => alert(`Task: ${text}\nExpired: ${expired}`)}
+				action={() => alert('you clicked it')}
 			/>
 		</div>
 	);
