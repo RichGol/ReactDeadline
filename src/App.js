@@ -135,7 +135,7 @@ function RemoveTask({remove, itemNo}) {
 /* RENDERS THE WHOLE APPLICATION */
 export default function App() {
 	//tasks state manages the current set of tasks
-	const [tasks, setTasks] = useState(new Array());
+	const [tasks, setTasks] = useState([]);
 	//nextItem state tracks the number of active tasks
 	const [nextItem, setNextItem] = useState(1);
 	//keyVal state provides a unique key for each task instance
@@ -161,7 +161,7 @@ export default function App() {
 				text: 'task 3',
 				expiration: 30
 		}];
-		loadTasks(temp);
+		/* loadTasks(temp); */
 	}, []);
 
 	/*******************************************
@@ -169,7 +169,7 @@ export default function App() {
 	 * objects, eventually to load saved tasks *
 	 * from a file.                            *
 	 *******************************************/
-	const loadTasks = temp => {
+	/* const loadTasks = temp => {
 		//update keyVal state, preventing overlap with other tasks
 		const lastKey = temp[temp.length - 1].key;
 		setKeyVal(lastKey+1);
@@ -180,7 +180,7 @@ export default function App() {
 		temp.map((task, i) => {
 			setTasks(allTasks => [...allTasks, task]);
 		});
-	}
+	} */
 
 	/************************************************
 	 * Handles appending a task to the tasks state, *
