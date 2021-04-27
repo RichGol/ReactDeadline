@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useReducer} from 'react';
 
 /* handles the view of a task description */
 function TaskItem({itemNo, expired, text, action}) {
@@ -18,9 +18,7 @@ function TaskItem({itemNo, expired, text, action}) {
 
 function Task({itemNo, text, expiration, remove}) {
 	//expired tracks the status of a task
-	const [expired, setExpired] = useState(false);
-
-	const expire = () => setExpired(true);
+	const [expired, expire] = useReducer(() => true, false)
 
 	return (
 		<div>
@@ -30,6 +28,7 @@ function Task({itemNo, text, expiration, remove}) {
 				text={text}
 				action={() => alert('you clicked it')}
 			/>
+			<button onClick={() => expire()}>Expire!</button>
 		</div>
 	);
 }
