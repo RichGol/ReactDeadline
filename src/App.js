@@ -144,7 +144,7 @@ export default function App() {
 	/********************************************
 	 * Loads three Task objects on first render *
 	 ********************************************/
-	useEffect( () => {
+	/* useEffect( () => {
 		const temp = [{
 				key: 0,
 				itemNo: 1,
@@ -161,8 +161,8 @@ export default function App() {
 				text: 'task 3',
 				expiration: 30
 		}];
-		/* loadTasks(temp); */
-	}, []);
+		loadTasks(temp);
+	}, []); */
 
 	/*******************************************
 	 * Handles loading tasks from an array of  *
