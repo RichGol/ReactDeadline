@@ -1,9 +1,12 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useReducer } from "react";
 
 /* HANDLES VIEW OF REMAINING TIME */
-function Timer({seconds, onFinish})  {
-	//remaining tracks the remaining time on the timer
-	const [remaining, setRemaining] = useState(seconds);
+function Timer({dateString, onFinish})  {
+	const expireDate = new Date(dateString);
+	const calcDiff = () => Math.round((expireDate.getTime() - Date.now()) / 1000);
+	//diff tracks the difference (in seconds) between
+	//expireDate and the current time
+	const [diff, updateDiff] = useReducer(calcDiff, calcDiff());
 	//trigger tracks the expiration of the timer
 	const [trigger, setTrigger] = useState(false);
 
@@ -21,26 +24,36 @@ function Timer({seconds, onFinish})  {
 	 * trigger.                                *
 	 *******************************************/
 	const tick = () => {
-		if (remaining - 1 >= 0 && !trigger) {
-			setRemaining(remaining - 1);
+		/* setDiff(Math.round((expireDate.getTime() - Date.now()) / 1000)); */
+		updateDiff();
+		if (diff >= 0 && !trigger) {
+			return
 		} else if (!trigger) {
 			setTrigger(true);
-			onFinish();
-			setRemaining(remaining + 1);
-		} else {
-			setRemaining(remaining + 1);
+			onFinish();	
 		}
 	}
 
+	const displayRemaining = () => {
+		let secs = Math.abs(diff);
+		const days = Math.floor(secs / 86400);
+		secs -= (days * 86400);
+		const hours = Math.floor(secs / 3600);
+		secs -= (hours * 3600);
+		const mins = Math.floor(secs / 60);
+		secs -= (mins * 60);
+		return `${days} Day(s) ${hours} Hour(s) ${mins} Minute(s) ${secs} Second(s)`;
+	}
+
 	return (
-		<p>
-			{trigger ? `${remaining} seconds late` : `${remaining} seconds left`}
+		<p title={`Due: ${dateString}`}>
+			({trigger ? `${displayRemaining()} late` : `${displayRemaining()} left`})
 		</p>
 	);
 }
 
 /* HANDLES VIEW OF TASK DESCRIPTION */
-function TaskItem({itemNo, expired, text, action}) {
+function TaskItem({expired, text, action}) {
 	return (
 		<button
 			className='taskitem'
@@ -69,13 +82,12 @@ function Task({itemNo, text, expiration, remove}) {
 	return (
 		<div>
 			<TaskItem 
-				itemNo={itemNo}
 				expired={expired}
 				text={text}
 				action={() => alert(`Task: ${text}\nExpired: ${expired}`)}
 			/>
 			<RemoveTask remove={remove} itemNo={itemNo}/>
-			<Timer seconds={expiration} onFinish={expire}/>
+			<Timer dateString={expiration} onFinish={expire}/>
 		</div>
 	);
 }
@@ -87,9 +99,11 @@ function AddTask({add}) {
 	//taskExpir is used to refer to the expiration form input element
 	const taskExpir = useRef();
 
-	/* const datePattern = '(0?[0-9]|1[0-2])[/-](0?[0-9]|[12][0-9]|3[01])[/-]([0-9]{4})';
-	const timePattern = '(0?[1-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])( AM| PM)?';
-	const regexPat = `(${datePattern}) +(${timePattern})`; */
+	const datePattern = '(0?[0-9]|1[0-2])[/-](0?[0-9]|[12][0-9]|3[01])[/-]([0-9]{4})';
+	const timePattern = '(0?[1-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])( [AaPp][Mm])?';
+	const regexPat = `(${datePattern}) +(${timePattern})`;
+	const time = new Date();
+	const timeString = `${time.getMonth() + 1}/${time.getDate()}/${time.getFullYear()} `
 
 	/********************************************************
 	 * Processes the submission of the HTML form element,   *
@@ -100,20 +114,20 @@ function AddTask({add}) {
 		const desc = taskDesc.current.value;
 		const expir = taskExpir.current.value;
 		add(desc, expir);
-		//console.log(expir, new Date(expir));
 		taskDesc.current.value = '';
-		taskExpir.current.value = '';
+		taskExpir.current.value = timeString;
 		taskDesc.current.focus();
 	}
 
 	return (
 		<>
 			<form onSubmit={submit}>
-				<p>Task Name:</p>
-				<input ref={taskDesc} type='text' placeholder='task name' required />
-				<p>Expiration Date/Time:</p>
-				<input ref={taskExpir} type='text' /* pattern={regexPat} */
-				placeholder='MM/DD/YYYY hh:mm:ss' required />
+				<p>Task:</p>
+				<input ref={taskDesc} type='text' placeholder='task name' title='task name' required />
+				<p>Expiration: </p>
+				<input ref={taskExpir} type='text' placeholder='date/time' pattern={regexPat}
+				defaultValue={timeString}
+				title='Format: MM/DD/YYYY hh:mm:ss' required />
 				<input type='submit' id='submit' value='Add Task' />
 			</form>
 		</>
@@ -144,32 +158,32 @@ export default function App() {
 	/********************************************
 	 * Loads three Task objects on first render *
 	 ********************************************/
-	/* useEffect( () => {
+	useEffect( () => {
 		const temp = [{
 				key: 0,
 				itemNo: 1,
 				text: 'task 1',
-				expiration: 10
+				expiration: '4/27/2021 22:00:00'
 			},{
 				key: 1,
 				itemNo: 2,
 				text: 'task 2',
-				expiration: 20
+				expiration: '4/27/2021 23:00:00'
 			},{
 				key: 5,
 				itemNo: 6,
 				text: 'task 3',
-				expiration: 30
+				expiration: '4/28/2021 00:00:00'
 		}];
 		loadTasks(temp);
-	}, []); */
+	}, []);
 
 	/*******************************************
 	 * Handles loading tasks from an array of  *
 	 * objects, eventually to load saved tasks *
 	 * from a file.                            *
 	 *******************************************/
-	/* const loadTasks = temp => {
+	const loadTasks = temp => {
 		//update keyVal state, preventing overlap with other tasks
 		const lastKey = temp[temp.length - 1].key;
 		setKeyVal(lastKey+1);
@@ -177,10 +191,8 @@ export default function App() {
 		const lastItemNo = temp[temp.length - 1].itemNo;
 		setNextItem(lastItemNo+1);
 		//update tasks state with loaded tasks
-		temp.map((task, i) => {
-			setTasks(allTasks => [...allTasks, task]);
-		});
-	} */
+		temp.map((task, i) => setTasks(allTasks => [...allTasks, task]));
+	}
 
 	/************************************************
 	 * Handles appending a task to the tasks state, *
