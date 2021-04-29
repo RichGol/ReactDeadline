@@ -1,32 +1,28 @@
+/* https://lively-rock-0b79e3a10.azurestaticapps.net/ */
 import React, { useEffect, useState, useRef, useReducer } from "react";
 
-/* HANDLES VIEW OF REMAINING TIME */
+/* RENDERS THE TICKING COUNTDOWN TIMER FOR TASKS */
 function Timer({dateString, onFinish})  {
+	//expireDate expresses the dateString as a JS Date Object
 	const expireDate = new Date(dateString);
+	//calcDiff returns the difference between expireDate and the current time in seconds
 	const calcDiff = () => Math.round((expireDate.getTime() - Date.now()) / 1000);
-	//diff tracks the difference (in seconds) between
-	//expireDate and the current time
+	
+	//diff tracks the remaining time using calcDiff
 	const [diff, updateDiff] = useReducer(calcDiff, calcDiff());
 	//trigger tracks the expiration of the timer
 	const [trigger, setTrigger] = useState(false);
 
-	/**********************************************
-	 * Handles setting up and breaking down timer *
-	 * tick rate in the browser window.           *
-	 **********************************************/
+	//sets up and breaks down the timer tick rate in the browser window
 	useEffect( () => {
 		let timerID = setInterval(() => tick(), 1000);
 		return () => clearInterval(timerID);
 	});
 
-	/*******************************************
-	 * Handles updating state of remaining and *
-	 * trigger.                                *
-	 *******************************************/
+	//handles the logic of expiring and updating diff
 	const tick = () => {
-		/* setDiff(Math.round((expireDate.getTime() - Date.now()) / 1000)); */
 		updateDiff();
-		if (diff >= 0 && !trigger) {
+		if (diff - 1 >= 0 && !trigger) {
 			return
 		} else if (!trigger) {
 			setTrigger(true);
@@ -34,6 +30,7 @@ function Timer({dateString, onFinish})  {
 		}
 	}
 
+	//handles the logic of displaying the remaining time in human-readable format
 	const displayRemaining = () => {
 		let secs = Math.abs(diff);
 		const days = Math.floor(secs / 86400);
@@ -52,7 +49,7 @@ function Timer({dateString, onFinish})  {
 	);
 }
 
-/* HANDLES VIEW OF TASK DESCRIPTION */
+/* RENDERS THE DESCRIPTION OF TASKS */
 function TaskItem({expired, text, action}) {
 	return (
 		<button
@@ -68,16 +65,10 @@ function TaskItem({expired, text, action}) {
 	);
 }
 
-/* HANDLES VIEW OF A TASK */
+/* RENDERS EACH TASK (A DESCRIPTION PLUS A TIMER) */
 function Task({itemNo, text, expiration, remove}) {
-	//expired tracks the expiration status of a task
-	const [expired, setExpired] = useState(false);
-	
-	/*********************************************
-	 * Handles modifying expired state when task *
-	 * expires.                                  *
-	 *********************************************/
-	const expire = () => setExpired(true);
+	//expired tracks the expiration status of a task, expire updates this status
+	const [expired, expire] = useReducer(() => true, false);
 
 	return (
 		<div>
@@ -92,23 +83,22 @@ function Task({itemNo, text, expiration, remove}) {
 	);
 }
 
-/* HANDLES LOGIC AND VIEW OF ADDING TASKS */
+/* RENDERS A FORM TO ADD TASKS */
 function AddTask({add}) {
 	//taskDesc is used to refer to the description form input element
-	const taskDesc = useRef();
 	//taskExpir is used to refer to the expiration form input element
+	const taskDesc = useRef();
 	const taskExpir = useRef();
 
+	//these patterns restrict user form entries to match date and time standards
 	const datePattern = '(0?[0-9]|1[0-2])[/-](0?[0-9]|[12][0-9]|3[01])[/-]([0-9]{4})';
 	const timePattern = '(0?[1-9]|1[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])( [AaPp][Mm])?';
 	const regexPat = `(${datePattern}) +(${timePattern})`;
+	//time and timeString pre-fills the expiration form input with the current date
 	const time = new Date();
 	const timeString = `${time.getMonth() + 1}/${time.getDate()}/${time.getFullYear()} `
 
-	/********************************************************
-	 * Processes the submission of the HTML form element,   *
-	 * enabling us to add tasks with custom names and times *
-	 ********************************************************/
+	//processes the submission of the HTML form element, adding the task and resetting the form
 	const submit = e => {
 		e.preventDefault();
 		const desc = taskDesc.current.value;
@@ -120,7 +110,6 @@ function AddTask({add}) {
 	}
 
 	return (
-		<>
 			<form onSubmit={submit}>
 				<p>Task:</p>
 				<input ref={taskDesc} type='text' placeholder='task name' title='task name' required />
@@ -130,11 +119,10 @@ function AddTask({add}) {
 				title='Format: MM/DD/YYYY hh:mm:ss' required />
 				<input type='submit' id='submit' value='Add Task' />
 			</form>
-		</>
 	);
 }
 
-/* HANDLES LOGIC AND VIEW OF REMOVING TASKS */
+/* RENDERS A BUTTON TO REMOVE TASKS */
 function RemoveTask({remove, itemNo}) {
 	return (
 			<button 
@@ -146,18 +134,14 @@ function RemoveTask({remove, itemNo}) {
 	)
 }
 
-/* RENDERS THE WHOLE APPLICATION */
-export default function App() {
-	//tasks state manages the current set of tasks
+/* RENDERS THE DEADLINEWEBSERVICE APP */
+function RenderApp({user}) {
+	//tasks stores an array of current tasks
 	const [tasks, setTasks] = useState([]);
-	//nextItem state tracks the number of active tasks
-	const [nextItem, setNextItem] = useState(1);
 	//keyVal state provides a unique key for each task instance
 	const [keyVal, setKeyVal] = useState(0);
 
-	/********************************************
-	 * Loads three Task objects on first render *
-	 ********************************************/
+	// Loads three Task objects on first render
 	useEffect( () => {
 		const temp = [{
 				key: 0,
@@ -178,27 +162,17 @@ export default function App() {
 		loadTasks(temp);
 	}, []);
 
-	/*******************************************
-	 * Handles loading tasks from an array of  *
-	 * objects, eventually to load saved tasks *
-	 * from a file.                            *
-	 *******************************************/
+	//loads tasks from an array of JSON objects
 	const loadTasks = temp => {
-		//update keyVal state, preventing overlap with other tasks
+		//load keyVal state, preventing overlap with new tasks
 		const lastKey = temp[temp.length - 1].key;
 		setKeyVal(lastKey+1);
-		//update nextItem state, preventing overlap with other tasks
-		const lastItemNo = temp[temp.length - 1].itemNo;
-		setNextItem(lastItemNo+1);
-		//update tasks state with loaded tasks
+		//populate tasks with loaded tasks
 		temp.map((task, i) => setTasks(allTasks => [...allTasks, task]));
 	}
 
-	/************************************************
-	 * Handles appending a task to the tasks state, *
-	 * updating nextItem automatically              *
-	 ************************************************/
-	const addTask = (text, expiration, key=keyVal, itemNo=nextItem) => {
+	//appends a new task to the tasks array
+	const addTask = (text, expiration, key=keyVal, itemNo=tasks.length) => {
 		const item = {
 			key: key,
 			itemNo: itemNo,
@@ -206,7 +180,6 @@ export default function App() {
 			expiration: expiration
 		};
 		setKeyVal(keyVal + 1);
-		setNextItem(nextItem + 1);
 		setTasks(allTasks => [...allTasks, item]);
 	}
 
@@ -223,15 +196,41 @@ export default function App() {
 			return task;
 		});
 		setTasks(newTasks);
-		setNextItem(nextItem - 1);
 	}
 
 	return (
 		<>
+			<p>Welcome, {user}</p>
 			<AddTask add={addTask} />
 			{tasks.map( task => (
 				<Task remove={removeTask} {...task} />
 			))}
 		</>
 	);
+}
+
+function EntryPage({setUser}) {
+	const user = useRef();
+
+	const submit = e => {
+		e.preventDefault();
+		setUser(user.current.value);
+		user.current.value = '';
+	}
+
+	return (
+		<form onSubmit={submit}>
+			<input ref={user} type='text' placeholder='username' required />
+			<input type='submit' id='submit' value='Enter' />
+		</form>
+	);
+}
+
+/* RENDERS THE WHOLE APPLICATION */
+export default function App() {
+	const [user, setUser] = useState('');
+	if (user) {
+		return <RenderApp user={user} />;
+	}
+	return <EntryPage setUser={setUser} />;
 }
