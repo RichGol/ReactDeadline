@@ -85,8 +85,8 @@ function Task({itemNo, text, expiration, remove}) {
 
 /* RENDERS A FORM TO ADD TASKS */
 function AddTask({add}) {
-	//taskDesc is used to refer to the description form input element
-	//taskExpir is used to refer to the expiration form input element
+	//taskDesc refers to the description form input element
+	//taskExpir refers to the expiration form input element
 	const taskDesc = useRef();
 	const taskExpir = useRef();
 
@@ -183,10 +183,7 @@ function RenderApp({user}) {
 		setTasks(allTasks => [...allTasks, item]);
 	}
 
-	/************************************************************
-	 * Handles popping the specified task from the tasks state, *
-	 * updating nextItem and tasks automatically                *
-	 ************************************************************/
+	//removes the specified task from the tasks array
 	const removeTask = (itemNo) => {
 		let newTasks = tasks.filter( (task, i) => !(task.itemNo === itemNo))
 		.map( (task, i) => {
@@ -209,9 +206,12 @@ function RenderApp({user}) {
 	);
 }
 
+/* RENDERS THE ENTRY PAGE */
 function EntryPage({setUser}) {
+	//user refers to the username form input element
 	const user = useRef();
 
+	//processes the submission of the HTML form element, saving the username
 	const submit = e => {
 		e.preventDefault();
 		setUser(user.current.value);
@@ -226,7 +226,7 @@ function EntryPage({setUser}) {
 	);
 }
 
-/* RENDERS THE WHOLE APPLICATION */
+/* RENDERS THE OVERALL APPLICATION */
 export default function App() {
 	const [user, setUser] = useState('');
 	if (user) {
