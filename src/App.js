@@ -57,22 +57,6 @@ function Timer({dateString, onFinish})  {
 	);
 }
 
-/* RENDERS TASK DESCRIPTIONS */
-function TaskItem({expired, text, action}) {
-	return (
-		<button
-			className='taskitem'
-			onClick={action}
-			style={{
-				backgroundColor: expired ? 'red' : 'white',
-				color: expired ? 'yellow' : 'black'
-			}}
-		>
-			{text}
-		</button>
-	);
-}
-
 /* RENDERS EACH TASK (A DESCRIPTION PLUS A TIMER) */
 function Task({itemNo, text, expiration, remove}) {
 	//expired tracks the expiration status of a task, expire updates this status
@@ -80,11 +64,15 @@ function Task({itemNo, text, expiration, remove}) {
 
 	return (
 		<div>
-			<TaskItem 
-				expired={expired}
-				text={text}
-				action={() => alert(`Task: ${text}\nExpired: ${expired}`)}
-			/>
+			<button className='taskitem'
+				onClick={() => alert(`Task: ${text}\nExpired: ${expired}`)}
+				style={{
+					backgroundColor: expired ? 'red' : 'white',
+					color: expired ? 'yellow' : 'black'
+				}}
+			>
+				{text}
+			</button>
 			<RemoveTask remove={remove} itemNo={itemNo}/>
 			<Timer dateString={expiration} onFinish={expire}/>
 		</div>
@@ -153,17 +141,17 @@ function RenderApp({user}) {
 	useEffect( () => {
 		const temp = [{
 				key: 0,
-				itemNo: 1,
+				itemNo: 0,
 				text: 'task 1',
 				expiration: '5/6/2021 10:30:00'
 			},{
 				key: 1,
-				itemNo: 2,
+				itemNo: 1,
 				text: 'task 2',
 				expiration: '5/6/2021 11:30:00'
 			},{
 				key: 2,
-				itemNo: 3,
+				itemNo: 2,
 				text: 'task 3',
 				expiration: '5/6/2021 12:30:00'
 		}];
