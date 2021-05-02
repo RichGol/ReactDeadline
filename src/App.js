@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useReducer } from "react";
 
 /* RENDERS THE TICKING COUNTDOWN TIMER FOR TASKS */
-function Timer({dateString, onFinish})  {
+function Timer({dateString, onExpire, finished})  {
 	//expireDate expresses the dateString as a JS Date Object
 	const expireDate = new Date(dateString);
 	//calcDiff returns the difference between expireDate and the current time in seconds
@@ -12,11 +12,16 @@ function Timer({dateString, onFinish})  {
 	const [diff, updateDiff] = useReducer(calcDiff, calcDiff());
 	//trigger tracks the expiration of the timer
 	const [trigger, setTrigger] = useState(false);
+	//timer points to the ticking setInterval
+	const timer = useRef();
 
 	//sets up and breaks down the timer tick rate in the browser window
 	useEffect( () => {
-		let timerID = setInterval(tick, 1000);
-		return () => clearInterval(timerID);
+		if (!finished) {
+			timer.current = setInterval(tick, 1000);
+			return () => clearInterval(timer.current);
+		}
+		clearInterval(timer.current);
 	});
 
 	//handles the logic of expiring and updating diff
@@ -26,7 +31,7 @@ function Timer({dateString, onFinish})  {
 			return
 		} else if (!trigger) {
 			setTrigger(true);
-			onFinish();	
+			onExpire();	
 		}
 	}
 
@@ -40,14 +45,12 @@ function Timer({dateString, onFinish})  {
 		const mins = Math.floor(secs / 60);
 		secs -= (mins * 60);
 
-		if (days !== 0) {
-			return `${days} Day(s) ${hours} Hour(s) ${mins} Minute(s) ${secs} Second(s)`;
-		} else if (days === 0 && hours !== 0) {
-			return `${hours} Hour(s) ${mins} Minute(s) ${secs} Second(s)`;
-		} else if (days === 0 && hours === 0 && mins !== 0) {
-			return `${mins} Minute(s) ${secs} Second(s)`;
-		}
-		return `${secs} Second(s)`;
+		let remaining = ``;
+		if (days !== 0) remaining += `${days} Day(s)`;
+		if (hours !== 0) remaining += ` ${hours} Hour(s)`;
+		if (mins !== 0) remaining += ` ${mins} Minute(s)`;
+		if (secs !== 0) remaining += ` ${secs} Second(s)`;
+		return remaining;
 	}
 
 	return (
@@ -61,20 +64,23 @@ function Timer({dateString, onFinish})  {
 function Task({itemNo, text, expiration, remove}) {
 	//expired tracks the expiration status of a task, expire updates this status
 	const [expired, expire] = useReducer(() => true, false);
+	//finished tracks the completion status of a task, finish updates this status
+	const [finished, finish] = useReducer(() => true, false);
 
 	return (
 		<div>
 			<button className='taskitem'
-				onClick={() => alert(`Task: ${text}\nExpired: ${expired}`)}
+				onClick={() => expired ? f => f : finish()}
 				style={{
-					backgroundColor: expired ? 'red' : 'white',
+					backgroundColor: (!finished && !expired) ? 'white' : 
+						(expired) ? 'lightcoral' : 'palegreen',
 					color: expired ? 'yellow' : 'black'
 				}}
 			>
 				{text}
 			</button>
 			<RemoveTask remove={remove} itemNo={itemNo}/>
-			<Timer dateString={expiration} onFinish={expire}/>
+			<Timer dateString={expiration} onExpire={expire} finished={finished}/>
 		</div>
 	);
 }
@@ -140,20 +146,20 @@ function RenderApp({user}) {
 	// Loads three Task objects on first render
 	useEffect( () => {
 		const temp = [{
-				key: 0,
-				itemNo: 0,
 				text: 'task 1',
-				expiration: '5/6/2021 10:30:00'
+				expiration: '5/6/2021 10:30:00',
+				key: 0,
+				itemNo: 0
 			},{
-				key: 1,
-				itemNo: 1,
 				text: 'task 2',
-				expiration: '5/6/2021 11:30:00'
+				expiration: '5/6/2021 11:30:00',
+				key: 1,
+				itemNo: 1
 			},{
-				key: 2,
-				itemNo: 2,
 				text: 'task 3',
-				expiration: '5/6/2021 12:30:00'
+				expiration: '5/6/2021 12:30:00',
+				key: 2,
+				itemNo: 2
 		}];
 		loadTasks(temp);
 	}, []);
@@ -170,10 +176,10 @@ function RenderApp({user}) {
 	//appends a new task to the tasks array
 	const addTask = async (text, expiration, key=keyVal, itemNo=tasks.length) => {
 		const item = {
-			key: key,
-			itemNo: itemNo,
 			text: text,
-			expiration: expiration
+			expiration: expiration,
+			key: key,
+			itemNo: itemNo
 		};
 		setKeyVal(keyVal + 1);
 		setTasks(allTasks => [...allTasks, item]);

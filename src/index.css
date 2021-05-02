@@ -28,6 +28,10 @@ div button.removetask {
 	background-color: #ccc;
 }
 
+div button.removetask:hover {
+	background-color: #aaa;
+}
+
 form input {
 	margin: 0 5px;
 }
