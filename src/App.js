@@ -38,7 +38,7 @@ function EntryPage({setUser}) {
 			method: 'POST',
 			mode: 'no-cors',
 			body: JSON.stringify({user: name})
-		});
+		}).catch(console.log('failed to add user'));
 	}
 
 	return (
@@ -60,17 +60,20 @@ function RenderApp({user}) {
 	useEffect( () => {
 		const temp = [{
 			text: 'task 1',
-			time: '5/6/2021 10:30:00',
+			time: '5/2/2021 10:30:00',
+			status: 'expire',
 			key: 0,
 			index: 0
 		},{
 			text: 'task 2',
-			time: '5/6/2021 11:30:00',
+			time: '5/4/2021 11:30:00',
+			status: 'finish',
 			key: 1,
 			index: 1
 		},{
 			text: 'task 3',
 			time: '5/6/2021 12:30:00',
+			status: 'active',
 			key: 2,
 			index: 2
 		}];
@@ -88,11 +91,12 @@ function RenderApp({user}) {
 	}
 
 	//append a new task to the tasks array
-	const addTask = async (text, time, key=keyVal, index=tasks.length) => {
+	const addTask = async (text, time, status='active', key=keyVal, index=tasks.length) => {
 		//create the new Task object
 		const task = {
 			text: text,
 			time: time,
+			status: status,
 			key: key,
 			index: index
 		};
@@ -106,7 +110,7 @@ function RenderApp({user}) {
 			method: 'POST',
 			mode: 'no-cors',
 			body: JSON.stringify({user: user, tasks: text, timer: time})
-		});
+		}).catch(console.log('failed to add task'));
 	}
 
 	//remove a specified task from the tasks array
@@ -119,12 +123,20 @@ function RenderApp({user}) {
 		setTasks(newTasks);
 	}
 
+	const updateTask = (index, value) => {
+		const newTasks = tasks.map( task => {
+			if (task.index === index) task.status = value;
+			return task;
+		});
+		setTasks(newTasks);
+	}
+
 	return (
 		<>
 			<p>Welcome, {user}</p>
 			<AddTask add={addTask} />
 			{tasks.map( task => (
-				<Task remove={removeTask} {...task} />
+				<Task remove={removeTask} update={updateTask} {...task} />
 			))}
 		</>
 	)
@@ -173,11 +185,11 @@ function AddTask({add}) {
 	);
 }
 
-function Task({text, time, index, remove}) {
+function Task({text, time, status, index, remove, update}) {
 	//expired tracks the expiration status of a task, updated by expire
-	const [expired, expire] = useReducer(() => true, false);
+	const [expired, expire] = useReducer(() => {update(index, 'expire'); return true}, status === 'expire');
 	//finished tracks the completion status of a task, updated by finish
-	const [finished, finish] = useReducer(val => true, false);
+	const [finished, finish] = useReducer(() => {update(index, 'finish'); return true}, status === 'finish');
 
 	return (
 		<div>
