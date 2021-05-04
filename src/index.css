@@ -20,15 +20,33 @@ div button.taskitem:hover {
 
 div button.removetask {
 	display: inline-block;
-	width: 10%;
+	width: 3%;
 	margin: 5px 1%;
 
 	font-size: 1.5vw;
+	text-align: center;
+
 	color: red;
 	background-color: #ccc;
 }
 
 div button.removetask:hover {
+	background-color: #aaa;
+}
+
+div button.edittask {
+	display: inline-block;
+	width: 5%;
+	margin: 5px 1% 5px 0;
+
+	font-size: 1.5vw;
+	text-align: center;
+
+	color: black;
+	background-color: #ccc;
+}
+
+div button.edittask:hover {
 	background-color: #aaa;
 }
 

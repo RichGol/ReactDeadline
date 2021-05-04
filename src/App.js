@@ -35,10 +35,11 @@ function EntryPage({setUser}) {
 
 		//save user to the database
 		await fetch('http://127.0.0.1/add-user', {
+		//await fetch('https://deadline-web-app-backend.azurewebsites.net/add-user', {
 			method: 'POST',
 			mode: 'no-cors',
 			body: JSON.stringify({user: name})
-		}).catch(console.log('failed to add user'));
+		});
 	}
 
 	return (
@@ -107,10 +108,11 @@ function RenderApp({user}) {
 
 		//save task to the database under the user
 		await fetch('http://127.0.0.1:80/add-task', {
+		//await fetch('https://deadline-web-app-backend.azurewebsites.net/add-task', {
 			method: 'POST',
 			mode: 'no-cors',
-			body: JSON.stringify({user: user, tasks: text, timer: time})
-		}).catch(console.log('failed to add task'));
+			body: JSON.stringify({user: user, tasks: text, timer: time, status: status, key: key.toString(), index: index.toString()})
+		});
 	}
 
 	//remove a specified task from the tasks array
@@ -123,9 +125,13 @@ function RenderApp({user}) {
 		setTasks(newTasks);
 	}
 
-	const updateTask = (index, value) => {
+	//update a specified task within the tasks array
+	const updateTask = (index, status=tasks[index].status, text=tasks[index].text, time=tasks[index].time) => {
 		const newTasks = tasks.map( task => {
-			if (task.index === index) task.status = value;
+			if (task.index !== index) return task;
+			if (task.text !== text) task.text = text;
+			if (task.time !== time) task.time = time;
+			if (task.status !== status) task.status = status;
 			return task;
 		});
 		setTasks(newTasks);
@@ -214,10 +220,20 @@ function RemoveTask({remove, index}) {
 		<button className='removetask'
 			onClick={() => remove(index)}
 		>
-			Remove
+			X
 		</button>
 	);
 }
+
+/* function EditTask({update, index}) {
+	return (
+		<button className='edittask'
+			onClick={() => update(index)}
+		>
+			Edit
+		</button>
+	)
+} */
 
 function Timer({dateString, onExpire, finished}) {
 	//expireDate expresses dateString as a JS Date object
