@@ -83,7 +83,10 @@ function RenderApp({user}) {
 				});
 			}
 			//load keyVal state, preventing overlap with new tasks
-			setKeyVal(temp[temp.length -1].key);
+			const maxKey = temp.reduce( (max, cur) => {
+				return (max.key > cur.key ? max : cur);
+			});
+			setKeyVal(maxKey.key + 1);
 			temp.map( task => setTasks(allTasks => [...allTasks, task]));
 		})
 		//catch issues if user does not exist
@@ -124,8 +127,8 @@ function RenderApp({user}) {
 		});
 		const task = tasks[index];
 		setTasks(newTasks);
-		//POST the request to the dockerized logic-tier
 		//await fetch('http://127.0.0.1:80/del-task', {
+		//POST the request to the dockerized logic-tier
 		await fetch('https://deadline-web-app-backend.azurewebsites.net/del-task', {
 			method: 'POST',
 			mode: 'no-cors',
@@ -134,7 +137,16 @@ function RenderApp({user}) {
 	}
 
 	//update a specified task within the tasks array
-	const updateTask = (index, status=tasks[index].status, text=tasks[index].text, time=tasks[index].time) => {
+	const updateTask = async (index, status=tasks[index].status, text=tasks[index].text, time=tasks[index].time) => {
+		const old = tasks[index];
+		//await fetch('http://127.0.0.1:80/del-task', {
+		//remove old version of the task to database
+		await fetch('https://deadline-web-app-backend.azurewebsites.net/del-task', {
+			method: 'POST',
+			mode: 'no-cors',
+			body: JSON.stringify({user: user, tasks: old.text, timer: old.time, status: old.status, key: old.key.toString(), index: index.toString()})
+		});
+		
 		const newTasks = tasks.map( task => {
 			if (task.index !== index) return task;
 			if (task.text !== text) task.text = text;
@@ -143,6 +155,14 @@ function RenderApp({user}) {
 			return task;
 		});
 		setTasks(newTasks);
+		
+		//await fetch('http://127.0.0.1:80/add-task', {
+		//add new version of the task to database
+		await fetch('https://deadline-web-app-backend.azurewebsites.net/add-task', {
+			method: 'POST',
+			mode: 'no-cors',
+			body: JSON.stringify({user: user, tasks: text, timer: time, status: status, key: old.key.toString(), index: index.toString()})
+		});
 	}
 
 	return (
@@ -201,14 +221,28 @@ function AddTask({add}) {
 
 function Task({text, time, status, index, remove, update}) {
 	//expired tracks the expiration status of a task, updated by expire
-	const [expired, expire] = useReducer(() => {update(index, 'expire'); return true}, status === 'expire');
+	//const [expired, expire] = useReducer(() => {update(index, 'expire'); return true}, status === 'expire');
+	const [expired, setExpired] = useState(status === 'expire');
+
+	const expire = () => {
+		update(index, 'expire');
+		setExpired(true);
+	}
+
 	//finished tracks the completion status of a task, updated by finish
-	const [finished, finish] = useReducer(() => {update(index, 'finish'); return true}, status === 'finish');
+	//const [finished, finish] = useReducer(() => {update(index, 'finish'); return true}, status === 'finish');
+	const [finished, setFinished] = useState(status === 'finish');
+
+	const finish = () => {
+		update(index, 'finish');
+		setFinished(true);
+	}
 
 	return (
 		<div>
 			<button className='taskitem'
-				onClick={() => expired ? f => f : finish()}
+				/* onClick={() => expired ? f => f : finish()} */
+				onClick={() => expired ? console.log('bad') : finish()}
 				style={{
 					backgroundColor: (!finished && !expired) ? 'white' :
 						(expired) ? 'lightcoral' : 'palegreen',

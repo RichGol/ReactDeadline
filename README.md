@@ -1,3 +1,8 @@
+# CORS
+We found some VERY helpful information about accessing RESTful web APIs and CORS from
+https://flaviocopes.com/golang-enable-cors/, all credit goes to them for the /req-tasks
+JS fetch request in React and HTTP handlefunc in Golang.
+
 # ReactBasic
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
