@@ -116,13 +116,21 @@ function RenderApp({user}) {
 	}
 
 	//remove a specified task from the tasks array
-	const removeTask = index => {
+	const removeTask = async index => {
 		const newTasks = tasks.filter( task => !(task.index === index))
 		.map( (task, i) => {
 			if (task.index !== i) task.index = i;
 			return task;
 		});
+		const task = tasks[index];
 		setTasks(newTasks);
+		//POST the request to the dockerized logic-tier
+		//await fetch('http://127.0.0.1:80/del-task', {
+		await fetch('https://deadline-web-app-backend.azurewebsites.net/del-task', {
+			method: 'POST',
+			mode: 'no-cors',
+			body: JSON.stringify({user: user, tasks: task.text, timer: task.time, status: task.status, key: task.key.toString(), index: task.index.toString()})
+		});
 	}
 
 	//update a specified task within the tasks array
