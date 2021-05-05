@@ -32,14 +32,6 @@ function EntryPage({setUser}) {
 		const name = user.current.value;
 		setUser(name);
 		user.current.value = '';
-
-		//save user to the database
-		await fetch('http://127.0.0.1/add-user', {
-		//await fetch('https://deadline-web-app-backend.azurewebsites.net/add-user', {
-			method: 'POST',
-			mode: 'no-cors',
-			body: JSON.stringify({user: name})
-		});
 	}
 
 	return (
@@ -57,38 +49,45 @@ function RenderApp({user}) {
 	//keyVal provides a unique key for each task
 	const [keyVal, setKeyVal] = useState(0);
 
-	//load three Task objects on first render
 	useEffect( () => {
-		const temp = [{
-			text: 'task 1',
-			time: '5/2/2021 10:30:00',
-			status: 'expire',
-			key: 0,
-			index: 0
-		},{
-			text: 'task 2',
-			time: '5/4/2021 11:30:00',
-			status: 'finish',
-			key: 1,
-			index: 1
-		},{
-			text: 'task 3',
-			time: '5/6/2021 12:30:00',
-			status: 'active',
-			key: 2,
-			index: 2
-		}];
-		loadTasks(temp);
+		loadTasks();
+	//the next comment disables a linter warning on useEffect();
+	// eslint-disable-next-line
 	}, []);
 
-	//load tasks from a JSON object array
-	const loadTasks = temp => {
-		//load keyVal state, preventing overlap with new tasks
-		const lastKey = temp[temp.length - 1].key;
-		setKeyVal(lastKey + 1);
-
-		//populate tasks array with loaded tasks
-		temp.map( task => setTasks(allTasks => [...allTasks, task]));
+	//load tasks from database based on Username
+	const loadTasks = async () => {
+		//await fetch('http://127.0.0.1:80/req-tasks', {
+		//POST the request to the dockerized logic-tier
+		await fetch('https://deadline-web-app-backend.azurewebsites.net/req-tasks', {
+			method: 'POST',
+			body: JSON.stringify({user: user}),
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+		})
+		//convert response to JSON
+		.then(resp => resp.json())
+		//parse tasks from response
+		.then(resp => {
+			const temp = [];
+			for (let task of resp) {
+				//create a task for each index of returned resp array
+				temp.push({
+					text: task[0],
+					time: task[1],
+					status: task[2],
+					key: Number(task[3]),
+					index: Number(task[4])
+				});
+			}
+			//load keyVal state, preventing overlap with new tasks
+			setKeyVal(temp[temp.length -1].key);
+			temp.map( task => setTasks(allTasks => [...allTasks, task]));
+		})
+		//catch issues if user does not exist
+		.catch( error => console.log(`${error}: Creating new user`));
 	}
 
 	//append a new task to the tasks array
@@ -107,8 +106,9 @@ function RenderApp({user}) {
 		setTasks(allTasks => [...allTasks, task]);
 
 		//save task to the database under the user
-		await fetch('http://127.0.0.1:80/add-task', {
-		//await fetch('https://deadline-web-app-backend.azurewebsites.net/add-task', {
+		//await fetch('http://127.0.0.1:80/add-task', {
+		//POST the request to the dockerized logic-tier
+		await fetch('https://deadline-web-app-backend.azurewebsites.net/add-task', {
 			method: 'POST',
 			mode: 'no-cors',
 			body: JSON.stringify({user: user, tasks: text, timer: time, status: status, key: key.toString(), index: index.toString()})
