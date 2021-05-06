@@ -241,8 +241,7 @@ function Task({text, time, status, index, remove, update}) {
 	return (
 		<div>
 			<button className='taskitem'
-				/* onClick={() => expired ? f => f : finish()} */
-				onClick={() => expired ? console.log('bad') : finish()}
+				onClick={() => expired ? f => f : finish()}
 				style={{
 					backgroundColor: (!finished && !expired) ? 'white' :
 						(expired) ? 'lightcoral' : 'palegreen',

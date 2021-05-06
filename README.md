@@ -1,7 +1,72 @@
-# CORS
-We found some VERY helpful information about accessing RESTful web APIs and CORS from
-https://flaviocopes.com/golang-enable-cors/, all credit goes to them for the /req-tasks
-JS fetch request in React and HTTP handlefunc in Golang.
+Informational
+=============
+Authors: Rich Goluszka, Bryan Gabe, Juan Moncada  
+Last Updated: 5/5/2021  
+Project: Deadline Web Service (RedDragons Final Project)
+
+Originiality
+============
+Nearly all of the code in this project is our own, excluding the following aspects which we 
+cannot take credit for:
+
+CORS
+----
+The front-end (written in React) interacts with the logic-tier (written in Go) using JavaScript 
+fetch() requests. We found some very helpful information about accessing RESTful web APIs and 
+CORS from https://flaviocopes.com/golang-enable-cors/, and all credit goes to them for the 
+/req-tasks API fetch request on the front-end and the /req-tasks HTTP handler in the logic-tier.
+
+React-Sound
+-----------
+Although our project did not implement sound within the React app, we did intend to. We ran into 
+some issues trying to troubleshoot it and the gloriousKenobis scrum team was kind enough to give 
+us access their Mosaic v2 project which did use sound. As mentioned, we ran out of time before 
+implementing sound, so we did not use any of their code, but we wished to thank them for their 
+willingness to help us.
+
+Sources
+=======
+The front-end of this webapp is currently hosted on Azure at 
+https://lively-rock-0b79e3a10.azurestaticapps.net/, and the source code is available at 
+https://github.com/RichGol/ReactDeadline/.  
+The logic-tier of this webapp is currently hosted on Azure within a Docker container, and the 
+source code is available at https://github.com/BryanGabe00/deadline-web-app-backend/.  
+The database of this webapp is MongoDB Atlas, whose website is https://cloud.mongodb.com/, 
+although the database is not publicly-accessible.
+
+Build / Execute / Dependency
+============================
+Required files
+--------------
+Everything required for the front-end is available from the ReactDeadline GitHub repository. 
+Everything required for the logic-tier is available from the deadline-web-app-backend GitHub 
+repository.
+
+Build Instructions
+------------------
+To prepare to run the React front-end locally:
+1. Open a terminal
+2. Navigate to the directory containing `yarn.lock`
+3. Run `yarn`
+_Note: To interact with the Go logic-tier, you WILL need to comment-out lines 62, 114, 132,_
+_144, 161 and uncomment lines 60, 112, 130, 142, 159 in `src/App.js`._
+
+To prepare to run the Go logic-tier locally:
+1. Open a terminal
+2. Navigate to your GOROOT path (it should look like `../Go/src/`)
+3. Clone the deadline-web-app-backend repository into the current directory or a subdirectory
+
+Execution Instructions
+----------------------
+To run the React front-end locally:
+1. Open a terminal
+2. Navigate to the directory containing `yarn.lock`
+3. Run `yarn start`
+
+To run the Go logic-tier locally:
+1. Open a terminal
+2. Navigate to `../Go/src/deadline-web-app-backend`
+3. Run `go run deadline-backend.go`
 
 # ReactBasic
 
