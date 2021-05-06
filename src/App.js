@@ -57,9 +57,9 @@ function RenderApp({user}) {
 
 	//load tasks from database based on Username
 	const loadTasks = async () => {
-		await fetch('http://127.0.0.1:80/req-tasks', {
+		//await fetch('http://127.0.0.1:80/req-tasks', {
 		//POST the request to the dockerized logic-tier
-		//await fetch('https://deadline-web-app-backend.azurewebsites.net/req-tasks', {
+		await fetch('https://deadline-web-app-backend.azurewebsites.net/req-tasks', {
 			method: 'POST',
 			body: JSON.stringify({user: user}),
 			headers: {
@@ -109,9 +109,9 @@ function RenderApp({user}) {
 		setTasks(allTasks => [...allTasks, task]);
 
 		//save task to the database under the user
-		await fetch('http://127.0.0.1:80/add-task', {
+		//await fetch('http://127.0.0.1:80/add-task', {
 		//POST the request to the dockerized logic-tier
-		//await fetch('https://deadline-web-app-backend.azurewebsites.net/add-task', {
+		await fetch('https://deadline-web-app-backend.azurewebsites.net/add-task', {
 			method: 'POST',
 			mode: 'no-cors',
 			body: JSON.stringify({user: user, tasks: text, timer: time, status: status, key: key.toString()})
@@ -127,9 +127,9 @@ function RenderApp({user}) {
 		});
 		const task = tasks[index];
 		setTasks(newTasks);
-		await fetch('http://127.0.0.1:80/del-task', {
+		//await fetch('http://127.0.0.1:80/del-task', {
 		//POST the request to the dockerized logic-tier
-		//await fetch('https://deadline-web-app-backend.azurewebsites.net/del-task', {
+		await fetch('https://deadline-web-app-backend.azurewebsites.net/del-task', {
 			method: 'POST',
 			mode: 'no-cors',
 			body: JSON.stringify({user: user, tasks: task.text, timer: task.time, status: task.status, key: task.key.toString()})
@@ -139,9 +139,9 @@ function RenderApp({user}) {
 	//update a specified task within the tasks array
 	const updateTask = async (index, status=tasks[index].status, text=tasks[index].text, time=tasks[index].time) => {
 		const old = tasks[index];
-		await fetch('http://127.0.0.1:80/del-task', {
+		//await fetch('http://127.0.0.1:80/del-task', {
 		//remove old version of the task to database
-		//await fetch('https://deadline-web-app-backend.azurewebsites.net/del-task', {
+		await fetch('https://deadline-web-app-backend.azurewebsites.net/del-task', {
 			method: 'POST',
 			mode: 'no-cors',
 			body: JSON.stringify({user: user, tasks: old.text, timer: old.time, status: old.status, key: old.key.toString()})
@@ -156,9 +156,9 @@ function RenderApp({user}) {
 		});
 		setTasks(newTasks);
 		
-		await fetch('http://127.0.0.1:80/add-task', {
+		//await fetch('http://127.0.0.1:80/add-task', {
 		//add new version of the task to database
-		//await fetch('https://deadline-web-app-backend.azurewebsites.net/add-task', {
+		await fetch('https://deadline-web-app-backend.azurewebsites.net/add-task', {
 			method: 'POST',
 			mode: 'no-cors',
 			body: JSON.stringify({user: user, tasks: text, timer: time, status: status, key: old.key.toString()})
